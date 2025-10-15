@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lifelab3/src/common/helper/color_code.dart';
 import 'package:lifelab3/src/common/helper/string_helper.dart';
 import 'package:lifelab3/src/mentor/code/provider/mentor_code_provider.dart';
@@ -43,6 +44,7 @@ import 'package:lifelab3/src/teacher/teacher_sign_up/provider/teacher_sign_up_pr
 import 'package:lifelab3/src/teacher/teacher_tool/provider/tool_provider.dart';
 import 'package:lifelab3/src/utils/storage_utils.dart';
 import 'package:lifelab3/src/welcome/presentation/page/welcome_page.dart';
+import 'package:open_file/open_file.dart';
 import 'package:provider/provider.dart';
 import 'package:lifelab3/src/student/vision/providers/vision_provider.dart';
 import 'package:lifelab3/src/common/utils/version_check_service.dart';
@@ -50,10 +52,47 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:lifelab3/src/common/utils/mixpanel_service.dart';
 
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) {
-  var data = jsonDecode(notificationResponse.payload!);
-  navigateToScreen(data);
+void notificationTapBackground(
+    NotificationResponse notificationResponse) async {
+  final payload = notificationResponse.payload;
+  debugPrint("=== NOTIFICATION TAP BACKGROUND ===");
+  debugPrint("Payload: $payload");
+  if (payload == null) {
+    debugPrint("Payload is null, returning");
+    return;
+  }
+
+  try {
+    final data = jsonDecode(payload);
+    debugPrint("Parsed data: $data");
+    if (data['type'] == 'image' && data['filePath'] != null) {
+      debugPrint("Image notification detected, filePath: ${data['filePath']}");
+      final file = File(data['filePath']);
+      debugPrint("Checking if file exists: ${file.path}");
+      if (await file.exists()) {
+        debugPrint("File exists, opening with OpenFile.open");
+        final result = await OpenFile.open(file.path);
+        debugPrint("OpenFile result: ${result.message} - ${result.type}");
+      } else {
+        debugPrint("File not found: ${data['filePath']}");
+      }
+    } else {
+      debugPrint("Non-image notification, navigating to screen");
+      navigateToScreen(data);
+    }
+  } catch (e) {
+    debugPrint("Error parsing JSON payload: $e");
+    // fallback for old payload format (just path string)
+    if (payload.endsWith('.png') || payload.endsWith('.jpg')) {
+      debugPrint("Trying to open as direct file path: $payload");
+      final result = await OpenFile.open(payload);
+      debugPrint("OpenFile result: ${result.message} - ${result.type}");
+    } else {
+      debugPrint("Invalid notification payload: $payload");
+    }
+  }
 }
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint('Handling a background message ${message.messageId}');
@@ -83,7 +122,8 @@ void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   // Optional: show content under status/nav bars (edge-to-edge)
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: SystemUiOverlay.values);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,
+      overlays: SystemUiOverlay.values);
 
   await StorageUtil.getInstance();
   await Firebase.initializeApp();
@@ -92,7 +132,8 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   channel = const AndroidNotificationChannel(
-    'lifelab', 'High Importance Notifications',
+    'lifelab',
+    'High Importance Notifications',
     description: 'This channel is used for important notifications.',
     importance: Importance.high,
   );
@@ -100,7 +141,8 @@ void main() async {
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
@@ -109,16 +151,26 @@ void main() async {
     sound: true,
   );
 
-  if (Platform.isIOS) {
-    const InitializationSettings initializationSettings = InitializationSettings(
-      iOS: DarwinInitializationSettings(
-        requestSoundPermission: true,
-        requestBadgePermission: true,
-        requestAlertPermission: true,
-      ),
-    );
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
+  // Initialize notifications for both iOS and Android
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: AndroidInitializationSettings('@drawable/launch_background'),
+    iOS: DarwinInitializationSettings(
+      requestSoundPermission: true,
+      requestBadgePermission: true,
+      requestAlertPermission: true,
+    ),
+  );
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      debugPrint("=== NOTIFICATION TAP (APP OPEN) ===");
+      debugPrint("Payload: ${response.payload}");
+      if (response.payload != null) {
+        handleNotificationTap(response.payload!); // app is open
+      }
+    },
+    onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
+  );
   await MixpanelService.init();
   runApp(const MyApp());
 }
@@ -134,8 +186,6 @@ class VersionCheckWrapper extends StatefulWidget {
   @override
   State<VersionCheckWrapper> createState() => _VersionCheckWrapperState();
 }
-
-
 
 class _VersionCheckWrapperState extends State<VersionCheckWrapper> {
   final VersionCheckService _versionCheckService = VersionCheckService();
@@ -169,8 +219,6 @@ class _MyAppState extends State<MyApp> {
   bool isMentor = false;
   bool isTeacher = false;
 
-
-
   getFcmToken() async {
     await FirebaseMessaging.instance.requestPermission();
     FirebaseMessaging.instance.getToken().then((value) {
@@ -196,27 +244,8 @@ class _MyAppState extends State<MyApp> {
       AndroidNotification? android = message.notification?.android;
       debugPrint(
           "LISTEN${(message.notification?.android?.channelId ?? "NA").toString()}");
-      flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-      var initializationSettingsAndroid =
-          const AndroidInitializationSettings('@drawable/launch_background');
-
-      // var initializationSettingsIOs = const IOSInitializationSettings();
-      DarwinInitializationSettings iosInitializationSettings =
-          const DarwinInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true,
-      );
-
-      var initSettings = InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: iosInitializationSettings);
-      flutterLocalNotificationsPlugin.initialize(initSettings,
-          onDidReceiveNotificationResponse: notificationTapBackground,
-          onDidReceiveBackgroundNotificationResponse:
-              notificationTapBackground);
-
+      // Show notification without reinitializing the plugin
       if (notification != null && android != null) {
         flutterLocalNotificationsPlugin.show(
             notification.hashCode,
@@ -253,10 +282,9 @@ class _MyAppState extends State<MyApp> {
     debugPrint("Is Mentor: $isMentor");
     debugPrint("Is Teacher: $isTeacher");
     super.initState();
-
   }
 
-   Widget _buildHomeScreen() {
+  Widget _buildHomeScreen() {
     Widget homeWidget = isLogin!
         ? const NavBarPage(currentIndex: 0)
         : isMentor
@@ -267,7 +295,6 @@ class _MyAppState extends State<MyApp> {
 
     return VersionCheckWrapper(child: homeWidget);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +324,8 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => QuizProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(
-          create: (_) => ProductProvider(ProductService('https://your.api/baseurl')), // ✅ Correct
+          create: (_) => ProductProvider(
+              ProductService('https://your.api/baseurl')), // ✅ Correct
         ),
         ChangeNotifierProvider(create: (_) => MentorProfileProvider()),
         ChangeNotifierProvider(create: (_) => ToolProvider()),
@@ -308,19 +336,15 @@ class _MyAppState extends State<MyApp> {
         navigatorKey: navKey,
         title: 'Life App',
         debugShowCheckedModeBanner: false,
-
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-
         supportedLocales: const [
           Locale('en', ''), // English
-
         ],
-
-         builder: (context, child) {
+        builder: (context, child) {
           return MaterialApp(
             // Remove the title and navigatorKey as they're in the parent MaterialApp
             debugShowCheckedModeBanner: false,
@@ -336,7 +360,6 @@ class _MyAppState extends State<MyApp> {
             ],
           );
         },
-
         theme: ThemeData(
           appBarTheme: const AppBarTheme(
             titleTextStyle: TextStyle(
@@ -355,9 +378,7 @@ class _MyAppState extends State<MyApp> {
           fontFamily: "Avenir",
           textTheme: const TextTheme().apply(displayColor: Colors.white),
         ),
-
-          home: _buildHomeScreen(),
-
+        home: _buildHomeScreen(),
       ),
     );
   }
@@ -414,9 +435,12 @@ void navigateToScreen(Map<String, dynamic> data) {
           "data": {
             "action": _safeInt(rawData['action']),
             "actionId": _safeInt(rawData['action_id'] ?? rawData['actionId']),
-            "laSubjectId": _safeInt(rawData['la_subject_id'] ?? rawData['laSubjectId']),
-            "laLevelId": _safeInt(rawData['la_level_id'] ?? rawData['laLevelId']),
-            "missionId": _safeInt(rawData['mission_id'] ?? rawData['missionId']),
+            "laSubjectId":
+                _safeInt(rawData['la_subject_id'] ?? rawData['laSubjectId']),
+            "laLevelId":
+                _safeInt(rawData['la_level_id'] ?? rawData['laLevelId']),
+            "missionId":
+                _safeInt(rawData['mission_id'] ?? rawData['missionId']),
             "visionId": _safeInt(rawData['vision_id'] ?? rawData['visionId']),
             "admin_message_id": _safeInt(rawData['admin_message_id']),
             "time": _safeInt(rawData['time']),
@@ -440,7 +464,6 @@ void navigateToScreen(Map<String, dynamic> data) {
       debugPrint("Level ID: ${notification.data?.data?.laLevelId}");
 
       NotificationActionHandler.handleNotification(context, notification);
-
     } catch (e, s) {
       debugPrint("Error parsing notification for student: $e\n$s");
     }
@@ -454,5 +477,34 @@ void navigateToScreen(Map<String, dynamic> data) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const WelComePage()),
     );
+  }
+}
+
+//handle notification tap
+void handleNotificationTap(String payload) async {
+  debugPrint("=== NOTIFICATION TAP (FOREGROUND) ===");
+  debugPrint("Payload: $payload");
+  try {
+    final data = jsonDecode(payload);
+    debugPrint("Parsed data: $data");
+    if (data['type'] == 'image' && data['filePath'] != null) {
+      debugPrint("Image notification detected, filePath: ${data['filePath']}");
+      final file = File(data['filePath']);
+      debugPrint("Checking if file exists: ${file.path}");
+      if (await file.exists()) {
+        debugPrint("File exists, opening with OpenFile.open");
+        final result = await OpenFile.open(file.path);
+        debugPrint("OpenFile result: ${result.message} - ${result.type}");
+      } else {
+        debugPrint("File not found: ${data['filePath']}");
+        Fluttertoast.showToast(msg: "File not found");
+      }
+    } else {
+      debugPrint("Non-image notification, navigating to screen");
+      navigateToScreen(data);
+    }
+  } catch (e) {
+    debugPrint("Error parsing JSON payload: $e");
+    debugPrint("Invalid notification payload: $payload");
   }
 }

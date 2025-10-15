@@ -12,7 +12,8 @@ class ApiHelper {
   // }
 
   static const String baseUrl = "https://api.life-lab.org";
-  
+  static const String baseUrlStaging = "https://staging.life-lab.org";
+
   // static const String baseUrl = "https://staging.life-lab.org";
 
   // static const String baseUrl = "http://10.0.2.2:8000";
@@ -21,7 +22,8 @@ class ApiHelper {
 
   // static const String baseUrl = "https://stg.gappubobo.com";
 
-  static const String imgBaseUrl = "https://lifeappmedia.blr1.digitaloceanspaces.com/";
+  static const String imgBaseUrl =
+      "https://lifeappmedia.blr1.digitaloceanspaces.com/";
 
   /// [Student]
   static const String sendOtp = "/v3/otp/send";
@@ -80,10 +82,15 @@ class ApiHelper {
   static const String lessonPlan = "/v3/lession-plans";
   static const String getClassStudent = "/v3/teachers/class-students";
   static const String getAllStudent = "/v3/reports/all-students";
+  static const String classStudent = "/v3/reports/class-students/";
+
+// Staging endpoints
+  static const String classStudentStaging = "/v3/reports/class-students/";
+  static const String getAllStudentStaging = "/v3/reports/all-students";
+
   static const String assignMission = "/v3/teachers/assign-missions";
   static const String assignTopic = "/v3/teachers/assign-topics";
   static const String teachersGrade = "/v3/teachers/grade-sections";
-  static const String classStudent = "/v3/reports/class-students/";
   static const String getTeacherMission = "/v3/teachers/missions";
   static const String pblmapping = "/v3/pbl-textbook-mappings/";
   static const String getTeacherMissionParticipant =

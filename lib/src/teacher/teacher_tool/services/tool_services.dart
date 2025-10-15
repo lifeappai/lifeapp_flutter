@@ -13,7 +13,6 @@ import '../../../common/helper/string_helper.dart';
 import '../../../utils/storage_utils.dart';
 
 class ToolServices {
-
   Dio dio = Dio();
 
   Future<void> storeToken() async {
@@ -68,7 +67,8 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -76,15 +76,14 @@ class ToolServices {
       debugPrint("Get Class Student Code: ${response.statusCode}");
       debugPrint("Get Class Student Code: ${response.data}");
 
-      if(response.statusCode == 200) {
+      if (response.statusCode == 200) {
         return response;
       }
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Get Class Student Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Get Class Student Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -98,14 +97,13 @@ class ToolServices {
     try {
       Response response = await dio.post(
         ApiHelper.baseUrl + ApiHelper.topic,
-        data: {
-          "type": type
-        },
+        data: {"type": type},
         options: Options(
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}"
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}"
           },
         ),
       );
@@ -117,7 +115,7 @@ class ToolServices {
       debugPrint("Get Teacher Topic Dio Error ${e.response}");
       Fluttertoast.showToast(msg: e.response!.data!["message"]);
       Loader.hide();
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Get Teacher Topic Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
@@ -137,7 +135,8 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -145,12 +144,11 @@ class ToolServices {
       debugPrint("Assign Mission Code: ${response.statusCode}");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Assign Mission Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Assign Mission Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -169,7 +167,8 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -177,12 +176,11 @@ class ToolServices {
       debugPrint("Assign Topic Code: ${response.statusCode}");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Assign Topic Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Assign Topic Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -192,6 +190,7 @@ class ToolServices {
     }
   }
 
+// Get all student report
   Future getAllStudentReport() async {
     try {
       Response response = await dio.get(
@@ -200,7 +199,8 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -209,12 +209,11 @@ class ToolServices {
       debugPrint("All Student Data: ${response.data}");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("All Student Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("All Student Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -232,7 +231,8 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -241,12 +241,11 @@ class ToolServices {
       log("Student Mission Data: ${response.data}");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Student Mission Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Student Mission Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -264,7 +263,8 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -273,12 +273,11 @@ class ToolServices {
       debugPrint("Get Teacher Grade Section Data: ${response.data}");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Get Teacher Grade Section Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Get Teacher Grade Section Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -288,34 +287,35 @@ class ToolServices {
     }
   }
 
-  Future getClassStudentReport(String gradeId) async {
+  // Get class student report
+  Future getClassStudentReport(String gradeId, {String? timeline}) async {
     try {
       Response response = await dio.get(
         ApiHelper.baseUrl + ApiHelper.classStudent + gradeId,
+        queryParameters: timeline != null ? {"timeline": timeline} : null,
         options: Options(
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
 
       debugPrint("Class Student Code: ${response.statusCode}");
-
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Class Student Socket Error: $e");
-      Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+      Fluttertoast.showToast(msg: "No internet connection");
+    } on DioException catch (e) {
       debugPrint("Class Student Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
       Loader.hide();
       debugPrint("Class Student Catch Error: $e");
-      Fluttertoast.showToast(msg: StringHelper.tryAgainLater);
+      Fluttertoast.showToast(msg: "Something went wrong");
     }
   }
 
@@ -338,13 +338,14 @@ class ToolServices {
 
       Response response = await dio.get(
         ApiHelper.baseUrl + ApiHelper.getTeacherMission,
-        queryParameters: params.isEmpty ? null : params, // 👈 no params if empty
+        queryParameters:
+            params.isEmpty ? null : params, // 👈 no params if empty
         options: Options(
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
             HttpHeaders.authorizationHeader:
-            "Bearer ${StorageUtil.getString(StringHelper.token)}"
+                "Bearer ${StorageUtil.getString(StringHelper.token)}"
           },
         ),
       );
@@ -355,7 +356,8 @@ class ToolServices {
       return response;
     } on DioException catch (e) {
       debugPrint("Get Mission Dio Error ${e.response}");
-      Fluttertoast.showToast(msg: e.response?.data?["message"] ?? "Something went wrong");
+      Fluttertoast.showToast(
+          msg: e.response?.data?["message"] ?? "Something went wrong");
       Loader.hide();
     } on SocketException catch (e) {
       Loader.hide();
@@ -376,20 +378,21 @@ class ToolServices {
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
 
-      debugPrint("Get Teacher Mission Participant Code: ${response.statusCode}");
+      debugPrint(
+          "Get Teacher Mission Participant Code: ${response.statusCode}");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Get Teacher Mission Participant Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Get Teacher Mission Participant Dio Error ${e.response}");
       Loader.hide();
     } catch (e) {
@@ -399,23 +402,20 @@ class ToolServices {
     }
   }
 
-  Future<Response?> submitTeacherMissionApproveReject({
-    required String studentId,
-    required int status,
-    required String comment
-  }) async {
+  Future<Response?> submitTeacherMissionApproveReject(
+      {required String studentId,
+      required int status,
+      required String comment}) async {
     try {
       Response response = await dio.patch(
         "${ApiHelper.baseUrl}${ApiHelper.teacherMissionApproveReject}$studentId/status",
-        data: {
-          "comment": comment,
-          "status": status
-        },
+        data: {"comment": comment, "status": status},
         options: Options(
           contentType: "application/json",
           headers: {
             HttpHeaders.acceptHeader: "application/json",
-            HttpHeaders.authorizationHeader: "Bearer ${StorageUtil.getString(StringHelper.token)}",
+            HttpHeaders.authorizationHeader:
+                "Bearer ${StorageUtil.getString(StringHelper.token)}",
           },
         ),
       );
@@ -425,13 +425,12 @@ class ToolServices {
       debugPrint("Submit Teacher Mission Status Code: $studentId");
 
       return response;
-
-    } on SocketException catch(e) {
+    } on SocketException catch (e) {
       Loader.hide();
       debugPrint("Submit Teacher Mission Status Socket Error: $e");
       Fluttertoast.showToast(msg: StringHelper.badInternet);
       return null;
-    } on DioException catch(e) {
+    } on DioException catch (e) {
       debugPrint("Submit Teacher Mission Status Dio Error ${e.response}");
       Loader.hide();
       return null;

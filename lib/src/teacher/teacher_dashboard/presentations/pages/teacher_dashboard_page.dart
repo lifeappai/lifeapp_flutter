@@ -39,13 +39,15 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   Future<void> _loadUnreadNotifications() async {
     final token = StorageUtil.getString(StringHelper.token);
     try {
-      final rawNotifications = await NotificationService(token).fetchNotifications();
+      final rawNotifications =
+          await NotificationService(token).fetchNotifications();
 
       // Cast the notifications list
       final notifications = rawNotifications.cast<NotificationModel>();
 
       // Filter unread notifications
-      final unreadNotifications = notifications.where((n) => n.isUnread).toList();
+      final unreadNotifications =
+          notifications.where((n) => n.isUnread).toList();
 
       // Debug prints
       debugPrint('Total notifications count: ${notifications.length}');
@@ -62,26 +64,28 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
   }
 
   List<Widget> get _tabs => [
-    const _DashboardBody(),
-    TeacherClassPage(
-      onBackToHome: () {
-        setState(() {
-          _selectedIdx = 0;
-        });
-      },
-    ),
-    ChangeNotifierProvider(
-      create: (_) => ProductProvider(
-        ProductService(StorageUtil.getString('auth_token')),
-      )..loadProducts(),
-      child: const ProductList(),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => LeaderboardProvider(StorageUtil.getString('auth_token'))..loadTeacherLeaderboard(),
-      child: const TeacherLeaderboardScreen(),
-    ),
-    Container(), // Placeholder for NotificationPage, handled via Navigator
-  ];
+        const _DashboardBody(),
+        TeacherClassPage(
+          onBackToHome: () {
+            setState(() {
+              _selectedIdx = 0;
+            });
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProductProvider(
+            ProductService(StorageUtil.getString('auth_token')),
+          )..loadProducts(),
+          child: const ProductList(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              LeaderboardProvider(StorageUtil.getString('auth_token'))
+                ..loadTeacherLeaderboard(),
+          child: const TeacherLeaderboardScreen(),
+        ),
+        Container(), // Placeholder for NotificationPage, handled via Navigator
+      ];
 
   @override
   void initState() {
@@ -96,8 +100,10 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
       });
 
       // Other initialization
-      Provider.of<TeacherDashboardProvider>(context, listen: false).getDashboardData();
-      Provider.of<DashboardProvider>(context, listen: false).checkSubscription();
+      Provider.of<TeacherDashboardProvider>(context, listen: false)
+          .getDashboardData();
+      Provider.of<DashboardProvider>(context, listen: false)
+          .checkSubscription();
       Provider.of<DashboardProvider>(context, listen: false).storeToken();
     });
   }
@@ -153,7 +159,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
     );
   }
 
-  Widget _buildNavItem(String iconPath, String label, int index, {bool showBadge = false}) {
+  Widget _buildNavItem(String iconPath, String label, int index,
+      {bool showBadge = false}) {
     final bool isSelected = _selectedIdx == index;
 
     return InkWell(
@@ -168,7 +175,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => NotificationPage(token: StorageUtil.getString(StringHelper.token)),
+              builder: (_) => NotificationPage(
+                  token: StorageUtil.getString(StringHelper.token)),
             ),
           ).then((_) => _loadUnreadNotifications());
           return;
@@ -209,7 +217,8 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 right: -6,
                 top: -6,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(12),
@@ -220,7 +229,9 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     minHeight: 16,
                   ),
                   child: Text(
-                    _unreadNotificationCount > 99 ? '99+' : '$_unreadNotificationCount',
+                    _unreadNotificationCount > 99
+                        ? '99+'
+                        : '$_unreadNotificationCount',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
@@ -289,7 +300,8 @@ class _TeacherResources extends StatelessWidget {
             TeacherResourceWidget(
               name: StringHelper.lifeLabDemoModelLesson,
               img: ImageHelper.demoModelIcon,
-              isSubscribe: StorageUtil.getBool(StringHelper.isTeacherLifeLabDemo),
+              isSubscribe:
+                  StorageUtil.getBool(StringHelper.isTeacherLifeLabDemo),
             ),
             const TeacherResourceWidget(
               name: StringHelper.conceptCartoons,
@@ -323,7 +335,6 @@ class _TeacherResources extends StatelessWidget {
               img: "assets/images/B2 1.png",
               isSubscribe: true,
             ),
-
           ],
         ),
       ],
